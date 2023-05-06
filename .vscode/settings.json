@@ -1,0 +1,6 @@
+{
+  "cmake.generator": "Ninja",
+  "cmake.configureSettings": {
+    "VCPKG_TARGET_TRIPLET": "x64-windows"
+  }
+}
