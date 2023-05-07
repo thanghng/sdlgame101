@@ -1,10 +1,12 @@
 #include "engine101/window.h"
 
+#include <SDL2/SDL_image.h>
+
 namespace engine_101 {
 
-Window::Window(uint16_t w, uint16_t h) {
-  width_ = w;
-  height_ = h;
+Window::Window(const String& title, const Dimension& d) {
+  title_ = title;
+  dimension_ = d;
 }
 
 Window::~Window() {
@@ -27,10 +29,11 @@ bool Window::init() {
   }
 
   // Create window
-  window_ = SDLPtrWindow(SDL_CreateWindow("engine101", SDL_WINDOWPOS_UNDEFINED,
-                                          SDL_WINDOWPOS_UNDEFINED, width_,
-                                          height_, SDL_WINDOW_SHOWN),
-                         deleter());
+  window_ =
+      SDLWindowPtr(SDL_CreateWindow(title_.c_str(), SDL_WINDOWPOS_UNDEFINED,
+                                    SDL_WINDOWPOS_UNDEFINED, dimension_.width,
+                                    dimension_.height, SDL_WINDOW_SHOWN),
+                   deleter());
 
   if (!window_) {
     ENGINE101LOG("Window could not be created! SDL_Error: ", SDL_GetError());
@@ -38,7 +41,7 @@ bool Window::init() {
   }
 
   // Create vsynced renderer for window_
-  renderer_ = SDLPtrRenderer(
+  renderer_ = SDLRendererPtr(
       SDL_CreateRenderer(window_.get(), -1,
                          SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC),
       deleter());
@@ -52,8 +55,8 @@ bool Window::init() {
   SDL_SetRenderDrawColor(renderer_.get(), 0xFF, 0xFF, 0xFF, 0xFF);
 
   // Initialize PNG loading
-  int imgFlags = IMG_INIT_PNG;
-  if (!(IMG_Init(imgFlags) & imgFlags)) {
+  int img_flag = IMG_INIT_PNG;
+  if (!(IMG_Init(img_flag) & img_flag)) {
     ENGINE101LOG("SDL_image could not initialize! SDL_image Error: ",
                  IMG_GetError());
     return false;
@@ -62,18 +65,19 @@ bool Window::init() {
   return true;
 }
 
-void Window::exec() {
+void Window::run() {
   ENGINE101LOG("Running Window loop!!");
 
-  auto screenSurface =
-      SDLPtrSurface(SDL_GetWindowSurface(window_.get()), deleter());
+  // auto screen_surface =
+  //     SDLSurfacePtr(SDL_GetWindowSurface(window_.get()), deleter());
 
-  // Fill the surface white
-  SDL_FillRect(screenSurface.get(), NULL,
-               SDL_MapRGB(screenSurface->format, 0xFF, 0xFF, 0xFF));
+  // // Fill the surface white
+  // SDL_FillRect(screen_surface.get(), NULL,
+  //              SDL_MapRGB(screen_surface->format, 0xFF, 0xFF, 0xFF));
 
-  // Update the surface
-  SDL_UpdateWindowSurface(window_.get());
+  auto sprite = std::make_unique<Sprite>(renderer_, "resource/ninja_move.png",
+                                         Dimension{45, 33}, Point2D{0, 0}, 6);
+  sprites_.emplace("main", std::move(sprite));
 
   // Hack to get window to stay up
   SDL_Event e;
@@ -82,9 +86,23 @@ void Window::exec() {
     while (SDL_PollEvent(&e)) {
       if (e.type == SDL_QUIT) quit = true;
     }
+
+    this->update();
   }
 
   ENGINE101LOG("Quiting loop...");
+}
+
+void Window::update() {
+  // Clear screen
+  SDL_RenderClear(renderer_.get());
+
+  for (const auto& [_, sprite] : sprites_) {
+    sprite->update(renderer_);
+  }
+
+  // Update screen
+  SDL_RenderPresent(renderer_.get());
 }
 
 }  // namespace engine_101
