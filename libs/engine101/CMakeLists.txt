@@ -46,7 +46,7 @@ target_include_directories(${PROJECT_NAME} INTERFACE
 target_link_libraries(${PROJECT_NAME} PRIVATE 
                       SDL2::SDL2
                       SDL2::SDL2main
-                      SDL2_image::SDL2_image)
+                      SDL2_image::SDL2_image-static)
 
 target_compile_options(${PROJECT_NAME} PRIVATE
   $<$<CXX_COMPILER_ID:MSVC>:/W4>
