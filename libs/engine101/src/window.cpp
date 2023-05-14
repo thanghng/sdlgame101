@@ -4,6 +4,9 @@
 
 namespace engine_101 {
 
+const int screen_fps = 60;
+const int screen_ticks_per_frame = 1000 / screen_fps;
+
 Window::Window(const String& title, const Dimension& d) {
   title_ = title;
   dimension_ = d;
@@ -11,6 +14,8 @@ Window::Window(const String& title, const Dimension& d) {
 
 Window::~Window() {
   ENGINE101LOG("Exiting...");
+
+  IMG_Quit();
   SDL_Quit();
 }
 
@@ -42,8 +47,7 @@ bool Window::init() {
 
   // Create vsynced renderer for window_
   renderer_ = SDLRendererPtr(
-      SDL_CreateRenderer(window_.get(), -1,
-                         SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC),
+      SDL_CreateRenderer(window_.get(), -1, SDL_RENDERER_ACCELERATED),
       deleter());
 
   if (!renderer_) {
@@ -65,15 +69,8 @@ bool Window::init() {
   return true;
 }
 
-void Window::run() {
+void Window::exec() {
   ENGINE101LOG("Running Window loop!!");
-
-  // auto screen_surface =
-  //     SDLSurfacePtr(SDL_GetWindowSurface(window_.get()), deleter());
-
-  // // Fill the surface white
-  // SDL_FillRect(screen_surface.get(), NULL,
-  //              SDL_MapRGB(screen_surface->format, 0xFF, 0xFF, 0xFF));
 
   auto sprite = std::make_unique<Sprite>(renderer_, "resource/ninja_move.png",
                                          Dimension{45, 33}, Point2D{0, 0}, 6);
@@ -82,7 +79,10 @@ void Window::run() {
   // Hack to get window to stay up
   SDL_Event e;
   bool quit = false;
+
   while (!quit) {
+    fps_timer_.start();
+
     while (SDL_PollEvent(&e)) {
       if (e.type == SDL_QUIT) quit = true;
     }
@@ -103,6 +103,12 @@ void Window::update() {
 
   // Update screen
   SDL_RenderPresent(renderer_.get());
+
+  Uint64 frame_ticks = fps_timer_.getTicks();
+
+  if (frame_ticks < screen_ticks_per_frame) {
+    SDL_Delay((Uint32)(screen_ticks_per_frame - frame_ticks));
+  }
 }
 
 }  // namespace engine_101

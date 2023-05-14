@@ -5,16 +5,16 @@
 
 #include "core.h"
 #include "sprite.h"
+#include "timer.h"
 
 namespace engine_101 {
-
 class Window {
  public:
   Window(const String& title, const Dimension& d);
   ~Window();
 
   bool init();
-  void run();
+  void exec();
 
  private:
   void update();
@@ -25,6 +25,7 @@ class Window {
   SDLWindowPtr window_ = nullptr;
   SDLRendererPtr renderer_ = nullptr;
   std::map<String, std::unique_ptr<Sprite>> sprites_;
+  Timer fps_timer_;
 };
 
 }  // namespace engine_101

@@ -7,7 +7,7 @@ int main(int argc, char *argv[]) {
   engine_101::Window window("SDL GAME 101", {SCREEN_WIDTH, SCREEN_HEIGHT});
 
   if (window.init()) {
-    window.run();
+    window.exec();
   } else {
     std::cout << "Failed to init windows" << std::endl;
   }

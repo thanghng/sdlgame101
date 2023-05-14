@@ -1,4 +1,4 @@
-#include "engine101/texture_helpers.h"
+#include "texture_helpers.h"
 
 #include <SDL2/SDL_image.h>
 

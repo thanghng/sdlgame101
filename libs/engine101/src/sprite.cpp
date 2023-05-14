@@ -1,6 +1,6 @@
 #include "engine101/sprite.h"
 
-#include "engine101/texture_helpers.h"
+#include "texture_helpers.h"
 
 namespace engine_101 {
 
